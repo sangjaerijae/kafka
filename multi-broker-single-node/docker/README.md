@@ -37,7 +37,8 @@ $ docker exec -it docker_kafka2_1 /opt/kafka/bin/kafka-console-producer.sh --bro
 >한글
 
 2) spark-shell 
-# /opt/mapr/spark/spark-2.4.0/bin/spark-shell --jars /opt/mapr/spark/spark-2.4.0/jars/spark-streaming-ka
+# /opt/mapr/spark/spark-2.4.0/bin/spark-shell --jars /opt/mapr/spark/spark-2.4.0/jars/spark-streaming-kafka-0-10_2.11-2.4.0.0-mapr-620.jar
+
 SLF4J: Class path contains multiple SLF4J bindings.
 SLF4J: Found binding in [jar:file:/opt/mapr/zeppelin/zeppelin-0.8.1/interpreter/spark/spark-interpreter-
 SLF4J: Found binding in [jar:file:/opt/mapr/hadoop/hadoop-2.7.0/share/hadoop/common/lib/slf4j-log4j12-1.
@@ -129,3 +130,9 @@ Batch: 6
 +----+-----+
 |null| 한글|
 +----+-----+
+
+
+References 
+ https://medium.com/@marcelo.hossomi/running-kafka-in-docker-machine-64d1501d6f0b
+ https://jaceklaskowski.gitbooks.io/apache-kafka/kafka-docker.html
+ https://github.com/wurstmeister/kafka-docker/wiki/Connectivity
