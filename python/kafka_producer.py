@@ -28,7 +28,7 @@ columkeys = ("col1","col2","col3","col4","col5","col6","col7","col8","col9","col
     "col31","col32","col33","col34","col35","col36","col37","col38","col39","col40",
     "col41","col42","col43")
 
-kafkaHost="xxx.xxx.xxx.xxxx:9092"
+kafkaHost="10.233.5.15:9092"
 
 
 def getFilesToWorkOn(inputPath):
@@ -90,7 +90,7 @@ def sendFromCsv(producer, filename):
             data = json.dumps(row, ensure_ascii=False)
             print("csv record : ",data)
 
-            kafka_topic="stock"
+            #kafka_topic="stock"
             if type(kafka_topic) == bytes:
                 kafka_topic = kafka_topic.decode('utf-8')
 
@@ -118,31 +118,38 @@ def sendFromCsv(producer, filename):
                 #print(response[0].error)
                 #print(response[0].offset)
 
+def addStockItem(output, filename):
+    output[0]['stockid']=getStockId(filename)
+    output[0]['fileloc']=getFileLocation(filename)
+    output[0]['publish_datetime']=datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    return output
+
+def getStockId(filename):
+    filepath = os.path.basename(filename).split("_")
+    return filepath[1]
+
+
+def getFileLocation(filename):
+    filepath = os.path.dirname(filename).split("/")
+    return filepath[7] + filepath[8] + filepath[9] + filepath[10] + filepath[11] 
 
 
 def loadStockInfo(producer, csvpath):
-    #kafka = KafkaClient(kafkaHost)
-    #producer = SimpleProducer(kafka)
-    #producer = KafkaProducer(bootstrap_servers=['xxx.xxxx.xxx.xxx:9092'], api_version=(0,10))
-    #produce json messages
-    #producer = KafkaProducer(bootstrap_servers=kafkaHost, value_serializer=lambda x: dumps(x).encode('utf-8')
-    #producer = KafkaProducer(bootstrap_servers='localhost:9092')
-
     seenFiles = False
     if csvpath is not None:
         files = getFilesToWorkOn(csvpath)
         for filename in files:
             if isExistFile(filename):
-                print( "File: " + filename )
+                print( "scan file : " + filename )
                 with open(filename, encoding='utf-8') as f: 
                     reader = csv.reader(f) 
-                    out = []
-                    out = [dict(zip(columkeys, property)) for property in reader]
-                    data = json.dumps(out, ensure_ascii=False)
-                    producer.send('my-topic9', data.encode('utf-8'))
+                    output = []
+                    output = [dict(zip(columkeys, property)) for property in reader]
+                    output=addStockItem(output, filename)
+                    data = json.dumps(output, ensure_ascii=False)
+                    producer.send(kafka_topic, data.encode('utf-8'))
                 time.sleep(1)
                 seenFiles = True
-    #producer.close()
 
 
 class Producer(threading.Thread):
@@ -172,7 +179,7 @@ class Producer(threading.Thread):
                 stockpath=splitDateTime(stocktime)
                 if isExistDirectory(stockpath):
                     loadStockInfo(producer, stockpath)
-            print("alive kafka producer")
+            print("alive kafka producer, current time = {0}, path = {1}".format(stocktime, stockpath))
             time.sleep(10)
         producer.close()
 
@@ -195,7 +202,8 @@ def main():
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="kafka Producer Python API is publish Stock Info to kakfa broker ")
-    parser.add_argument('--date', type=str, required=False, default='', help='yyyy/mm/dd or yyyy/mm/dd HH:mm ')
+    parser.add_argument('--topic', type=str, required=True, default='', help=' kafka topic')
+    parser.add_argument('--date', type=str, required=True, default='', help='yyyy/mm/dd or yyyy/mm/dd HH:mm ')
     parser.add_argument('--interval', type=int, required=False, default=5, help='monitoring interval second')
     parser.add_argument('--log', type=str, required=False, default='true', help=r"show console csv file, content, json dumps")
 
@@ -205,6 +213,7 @@ if __name__ == "__main__":
         )
 
     args = parser.parse_args()
+    kafka_topic = args.topic
     tdate = args.date
     interval=args.interval
 
