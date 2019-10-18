@@ -123,7 +123,7 @@ def sendFromCsv(producer, filename):
 def loadStockInfo(producer, csvpath):
     #kafka = KafkaClient(kafkaHost)
     #producer = SimpleProducer(kafka)
-    #producer = KafkaProducer(bootstrap_servers=['10.233.5.15:9092'], api_version=(0,10))
+    #producer = KafkaProducer(bootstrap_servers=['xxx.xxxx.xxx.xxx:9092'], api_version=(0,10))
     #produce json messages
     #producer = KafkaProducer(bootstrap_servers=kafkaHost, value_serializer=lambda x: dumps(x).encode('utf-8')
     #producer = KafkaProducer(bootstrap_servers='localhost:9092')
