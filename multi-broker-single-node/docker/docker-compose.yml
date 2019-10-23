@@ -61,19 +61,24 @@ services:
              KAFKA_INTER_BROKER_LISTENER_NAME:
                 INSIDE
 
-    kafka_manager:
-        image: sheepkiller/kafka-manager:latest
+#    kafka_manager:
+#        image: sheepkiller/kafka-manager:latest
+#        build: .
+#        container_name: kafka_manager
+#        ports:
+#            - "9010:9010"
+#        environment:
+#             ZK_HOSTS:
+#                "zookeeper:2181"
+
+    kafdrop:
+        image: obsidiandynamics/kafdrop
         build: .
-        container_name: kafka_manager
-#        depends_on:
-#            - zookeeper
         ports:
             - "9000:9000"
         environment:
-             ZK_HOSTS:
-                "zookeeper:2181"
-#        links:
-#            - zookeeper
-
-
+            KAFKA_BROKERCONNECT: "kafka1:9090,kafka2:9090,kafka3:9090"
+            JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication"
+    #depends_on:
+          #- "kafka"
 
