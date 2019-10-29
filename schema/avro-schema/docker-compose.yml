@@ -1,0 +1,30 @@
+version: '3.2'
+
+services:
+    avro-postgres:
+        image: postgres:9.6
+        environment:
+             POSTGRES_PASSWORD:
+                 "avro"
+             POSTGRES_USER:
+                 "avro"
+        ports:
+            - "5432:5432"
+    avro-schema-registry:
+        image: salsify/avro-schema-registry:v0.11.0
+        build: .
+        command: bundle exec rails s -p 21000 -b '0.0.0.0'
+        environment:
+             DATABASE_URL:
+                 "posrgesql:avro:avro@posrgres/avro"
+             FORCE_SSL:
+                 "false"
+             SECRET_KEY_BASE:
+                 "supersecret"
+             SCHEMA_REGISTRY_PASSWORD:
+                 "avro"
+        ports:
+            - "21000:21000"
+        depends_on:
+            - avro-postgres
+
