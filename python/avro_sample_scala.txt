@@ -1,0 +1,48 @@
+%spark
+
+import java.nio.file.Files
+import java.nio.file.Paths
+
+import org.apache.spark.sql.avro._
+
+/*
+{
+	"namespace": "example.avro",
+	"type": "record",
+	"name": "User",
+	"fields": [
+		{"name": "name", "type": "string"},
+		{"name": "favorite_number",  "type": ["int", "null"]},
+		{"name": "favorite_color", "type": ["string", "null"]}
+	]
+}
+*/
+
+val ds = spark.readStream
+        .format("kafka")
+        .option("kafka.bootstrap.servers", "localhost:9092")
+        .option("subscribe", "avro")
+        .option("startingOffsets", "earliest") // From starting
+        .load()
+
+val jsonFormatSchema = new String(Files.readAllBytes(Paths.get("/mapr/mapr.sbihd.com/user/mapr/kafka/python/user.avsc")))
+
+val userDF = ds.select(from_avro(col("value"), jsonFormatSchema).as("User")).select("User.*")
+
+userDF.printSchema
+/*        
+val spark = SparkSession
+    .builder
+    .appName("kafka-structed-stream")
+    .config("spark.master", "local[*]")
+    .getOrCreate()
+*/
+
+
+val consoleOutput1 = userDF.writeStream
+    .outputMode("update")
+    .format("console")
+    .start()
+    .awaitTermination()
+    
+ //spark.streams.awaitAnyTermination()
