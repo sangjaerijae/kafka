@@ -3,6 +3,7 @@ version: '3.2'
 services:
     zookeeper:
         image: wurstmeister/zookeeper:latest
+        restart: "no"
         environment:
              ZOOKEEPER_CLIENT_PORT:
               "2181"
@@ -13,6 +14,7 @@ services:
 
     kafka1:
         image: wurstmeister/kafka:latest
+        restart: "no"
         build: .
         ports:
             - "9092:9092"
@@ -30,6 +32,7 @@ services:
 
     kafka2:
         image: wurstmeister/kafka:latest
+        restart: "no"
         build: .
         ports:
             - "9093:9092"
@@ -46,6 +49,7 @@ services:
                 INSIDE
     kafka3:
         image: wurstmeister/kafka:latest
+        restart: "no"
         build: .
         ports:
             - "9094:9092"
@@ -61,15 +65,19 @@ services:
              KAFKA_INTER_BROKER_LISTENER_NAME:
                 INSIDE
 
-#    kafka_manager:
-#        image: sheepkiller/kafka-manager:latest
-#        build: .
-#        container_name: kafka_manager
-#        ports:
-#            - "9010:9010"
-#        environment:
-#             ZK_HOSTS:
-#                "zookeeper:2181"
+    kafka_manager:
+        image: sheepkiller/kafka-manager:latest
+        build: .
+        container_name: kafka_manager
+#        depends_on:
+#            - zookeeper
+        ports:
+            - "9010:9010"
+        environment:
+             ZK_HOSTS:
+                "zookeeper:2181"
+#        links:
+#            - zookeeper
 
     kafdrop:
         image: obsidiandynamics/kafdrop
@@ -77,6 +85,7 @@ services:
         ports:
             - "9000:9000"
         environment:
+            TZ: "Asia/Tokyo"
             KAFKA_BROKERCONNECT: "kafka1:9090,kafka2:9090,kafka3:9090"
             JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication"
     #depends_on:
