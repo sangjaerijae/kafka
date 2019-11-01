@@ -1,0 +1,28 @@
+{
+	"namespace": "kafka.avro",
+	"type": "record",
+	"name": "finance",
+	"fields": [
+		{"name": "company_name", "type": "string"},
+   		{"name": "stock_price",  "type": "string"},
+		{"name": "per", "type": "string"},
+		{"name": "pbr", "type": "string"},
+		{"name": "yield", "type": "string"},
+		{"name": "credit_ratio", "type": "string"},
+		{"name": "previous_closing_price", "type": "string"},
+		{"name": "starting_price", "type": "string"},
+		{"name": "high_price", "type": "string"},
+		{"name": "low_price", "type": "string"},
+		{"name": "trading_price", "type": "string"},
+		{"name": "vwap", "type": "string"},
+		{"name": "contract_number", "type": "string"},
+		{"name": "unit_price", "type": "string"},
+		{"name": "min_purchase_price", "type": "string"},
+		{"name": "shares_per_unit_number", "type": "string"},
+		{"name": "total_market_value", "type": "string"},
+		{"name": "stock_code", "type": "string"},
+		{"name": "request_publish_date", "type": "string"},
+		{"name": "producer_send_datetime", "type": "string"},
+		{"name": "seqid", "type": "string"}
+	]
+}

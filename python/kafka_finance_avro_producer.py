@@ -17,22 +17,22 @@ import time
 import requests
 import threading, logging, time
 import multiprocessing
-import fastavro
+#import fastavro
 
 from avro.io import DatumWriter
-from fastavro import reader
-from fastavro import json_reader
+#from fastavro import reader
+#from fastavro import json_reader
 from dateutil.parser import parse
 from json import dumps
 from json import loads
 from os.path import basename
 from kafka import KafkaProducer
 from kafka import KafkaClient
-from kafka import SimpleProducer
+#from kafka import SimpleProducer
 from kafka.errors import KafkaError
 
-csvpath="finance"
-loghome="log"
+csvpath="/mapr/mapr.sbihd.com/user/mapr/kafka/finance"
+loghome="/mapr/mapr.sbihd.com/user/mapr/kafka/python/log"
 
 columkeys = (
     "company_name","five_days","twenty_five_days","days_75","days_200","accounting_period_2017","accounting_period_2018","accounting_period_2019","amount_of_sales_2017","amount_of_sales_2018","amount_of_sales_2019",
@@ -146,7 +146,6 @@ def getJsonString(data):
     return strjson[0]['finance']
 
 
-
 def loadFinanceInfo(producer, csvpath, schema):
     seenFiles = False
     if csvpath is not None:
@@ -160,6 +159,7 @@ def loadFinanceInfo(producer, csvpath, schema):
                     output = [dict(zip(columkeys, property)) for property in cf]
                     output = addStockItem(output, filename)
                     json=getJsonString(output)
+                    logger.info(' %s ', json)
                     raw_bytes=convertAvro(json, schema)
                     producer.send(kafka_topic, raw_bytes)
                     #producer.send_messages(kafka_topic, raw_bytes)
@@ -178,7 +178,8 @@ class Producer(threading.Thread):
         self.stop_event.set()
 
     def run(self):
-        logger.info('kafka producer start ')
+        logger.info('kafka finance producer start ')
+        #time.sleep(15) # delay starttime (folder access = delay starttime + crontab starttime)
         #producer = SimpleProducer(kafka)
         producer = KafkaProducer(bootstrap_servers=kafka_host)
 
@@ -200,7 +201,7 @@ class Producer(threading.Thread):
             logger.info('alive kafka producer, current time = %s, path = %s', crawlingTime, financepath)
             time.sleep(10)
         producer.close()
-        logger.info('kafka finance producer - daemon stop')
+        logger.info('kafka finance producer close - daemon stopped')
 
 
 def main():
@@ -248,7 +249,6 @@ if __name__ == "__main__":
     schema_registry_uri="http://localhost:9090/api/v1/schemaregistry/schemas/finance/versions/latest"
 
     logger = get_module_logger('Kafka Finance Produce')
-
 
     if log not in {'true', 'false'}:
         logger.info("kafka_finace_producer.py: error: the following argument value is only true, false: --log")
