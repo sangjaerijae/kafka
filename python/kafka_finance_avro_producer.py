@@ -104,7 +104,11 @@ def splitDateTime(ymd):
             day = "0" + str(dt.day)
             financepath = csvpath + '/' + str(dt.year)  + '/' + month + '/' + day
     else:
-        financepath= csvpath + '/' + str(dt.year)  + '/' + str(dt.month)  + '/' + str(dt.day)
+        if len(str(dt.day)) == 1:
+            day = "0" + str(dt.day)
+            financepath = csvpath + '/' + str(dt.year)  + '/' + str(dt.month) + '/' + day
+        else:
+            financepath= csvpath + '/' + str(dt.year)  + '/' + str(dt.month)  + '/' + str(dt.day)
     return financepath
 
 
