@@ -1,0 +1,69 @@
+import org.apache.spark._
+import org.apache.spark.streaming._
+
+// create streaming instance ( sparkContext Object )
+val ssc = new StreamingContext(sc, Seconds(5))
+
+// or use SparkConf
+val conf = new SparkConf().setMaster("local[4]").sepAppNam("StreamingStockAnalystics")
+val ssc  = new StreamingContext(conf, Seconds(5))
+
+
+import spark.implicits._
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.Encoders
+import org.apache.spark.streaming._
+
+val ssc = new StreamingContext(sc, Seconds(5))
+//val lines = ssc.textFileStream("kafka/finance/2019/11/05")
+val lines = ssc.textFileStream("kafka/python/testfile")
+
+■株価情報
+会社名称,株価,PER,PBR,利回り,信用倍率,前日終値,始値,高値,安値,出来高,売買代金,VWAP,約定回数,売買最低代金,単元株数,時価総額
+
+columkeys = (
+    "company_name","stock_price","per","pbr","yield","credit_ratio","previous_closing_price","starting_price","high_price","low_price",
+    "trading_price","vwap","contract_number","unit_price","min_purchase_price","shares_per_unit_number","total_market_value"
+)
+
+record
+東急建設,880,10.8,0.98,3.41,1.17,859,868,881,868,302000,264000000,875.303,727,88000,100,93950000000
+
+
+■財務情報
+会社名称, 5日線,25日線,75日線,200日線,決算期(2017年同月),決算期(2018年同月),決算期(2019年同月),売上高(2017年同月),売上高(2018年同月),売上高(2019年同月),経常益(2017年同月),経常益(2018年同月),経常益(2019年同月),最終益(2017年同月),最終益(2018年同月),最終益(2019年同月),１株益(2017年同月),１株益(2018年同月),１株益(2019年同月),１株配(2017年同月),１株配(2018年同月),１株配(2019年同月),発表日(2017年同月),発表日(2018年同月),発表日(2019年同月) 
+
+
+record
+極洋,+0.62,+2.39,+1.14,+2.20,2018-03,2019-03,予2020-03,2547,2561,2860,44.4,44.3,54.0,32.1,29.1,38.0,304.3,269.6,351.2,60.0,70.0,70.0,2018-05-10,2019-05-13,2019-05-13
+
+　①１）から「会社名」、「株価」、「始値」、「高値」、「安値」を抽出します。
+　②２）から経営状態が良好な会社を抽出します。
+　　　　以下の3条件に合う会社が良好とみなします。
+　　　　→経常益（2019年同月）が（2017年同月）と（2018年同月）よりも高い
+　　　　→最終益（2019年同月）が （2017年同月）と（2018年同月）よりも高い
+　　　　→１株益（2019年同月）が（2017年同月）と（2018年同月）よりも高い
+
+
+// create dataframe RDD from Discretized  Stream
+case class Finances(company_name: String, five_days:String, twenty_five_days:String, days_75:String, days_200:String, accounting_period_2017:String, accounting_period_2018:String, accounting_period_2019:String, amount_of_sales_2017:String, amount_of_sales_2018:String, amount_of_sales_2019:String, ordinary_profit_2017:String, ordinary_profit_2018:String, ordinary_profit_2019:String, net_profit_2017:String, net_profit_2018:String, net_profit_2019:String, eps_2017:String, eps_2018:String, eps_2019:String, dps_2017:String, dps_2018:String, dps_2019:String, announcement_date_2017:String, announcement_date_2018:String, announcement_date_2019:String)
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+def parse (rdd : org.apache.spark.rdd.RDD[String] ) = {
+var l = rdd.map(_.split(","))
+val finances = l.map(p => Finances(p(0),p(1),p(2),p(3),p(4),p(5),p(6),p(7),p(8),p(9),p(10),p(11),p(12),p(13),p(14),p(15),p(16),p(17),p(18),p(19),p(20),p(21),p(22),p(23),p(24),p(25)))
+val financesDf = sqlContext.createDataFrame(finances)
+financesDf.registerTempTable("finances")
+financesDf.show()
+var x = sqlContext.sql("select count(*) from finances")
+println (x)
+}
+
+lines.foreachRDD { rdd => parse(rdd)}
+
+lines.print()
+ssc.start()
+ssc.awaitTermination() 
+
+
+- sample textFileStream
+cp /kafka/finance/2019/11/05/FINANCE_1301_20191105091503 /kafka/python/testfile/
